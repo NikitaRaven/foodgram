@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
-from picture_field import PictureField
+from .picture_field import PictureField
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -19,16 +19,23 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = RecipeIngredient
         fields = ('ingredient', 'amount')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    ingredients = RecipeIngredientSerializer(many=True, required=True)
-    tags = serializers.PrimaryKeyRelatedField(many=True,
-                                              required=True,
-                                              queryset=Tag.objects.all())
+    ingredients = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.IntegerField()
+        ),
+        write_only=True
+    )
+    tags = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True
+    )
     image = PictureField(required=True)
 
     class Meta:
@@ -44,8 +51,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
 
         for ingredient_data in ingredients_data:
-            RecipeIngredient.objects.create(recipe=recipe, **ingredient_data)
+            ingredient_id = ingredient_data['id']
+            amount = ingredient_data['amount']
+            ingredient = Ingredient.objects.get(id=ingredient_id)
+            RecipeIngredient.objects.create(
+                recipe=recipe, ingredient=ingredient, amount=amount
+            )
 
-        recipe.tags.set(tags_data)
+        for tag_id in tags_data:
+            tag = Tag.objects.get(id=tag_id)
+            recipe.tags.add(tag)
 
         return recipe

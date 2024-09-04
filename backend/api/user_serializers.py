@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from users.models import FoodUser
+from subscriptions.models import Subscription
 from .picture_field import PictureField
 
 
@@ -47,11 +48,16 @@ class GetFoodUserSerializer(serializers.ModelSerializer):
         'get_avatar_url',
         read_only=True,
     )
+    is_subscribed = serializers.SerializerMethodField(
+        'get_is_subscribed',
+        read_only=True,
+    )
 
     class Meta:
         model = FoodUser
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name', 'avatar'
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'avatar'
         )
 
     def get_avatar_url(self, obj):
@@ -59,6 +65,14 @@ class GetFoodUserSerializer(serializers.ModelSerializer):
             request = self.context.get('request')
             return request.build_absolute_uri(obj.avatar.url)
         return None
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request.user.is_authenticated:
+            return Subscription.objects.filter(
+                user=request.user, author=obj
+            ).exists()
+        return False
 
 
 class PasswordSerializer(serializers.Serializer):
