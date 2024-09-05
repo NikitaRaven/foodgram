@@ -6,14 +6,21 @@ from .user_serializers import GetFoodUserSerializer
 
 
 class SubscribeRecipeSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class GetUserSubscriptionSerializer(GetFoodUserSerializer):
-    recipes = SubscribeRecipeSerializer(many=True, read_only=True)
-    recipes_count = serializers.IntegerField(read_only=True)
+    recipes = serializers.SerializerMethodField(
+        'get_recipes',
+        read_only=True
+    )
+    recipes_count = serializers.SerializerMethodField(
+        'get_recipes_count',
+        read_only=True
+    )
 
     class Meta(GetFoodUserSerializer.Meta):
         fields = (
@@ -26,7 +33,7 @@ class GetUserSubscriptionSerializer(GetFoodUserSerializer):
         recipes_limit = request.query_params.get('recipes_limit', None)
         recipes = Recipe.objects.filter(author=obj)
 
-        if recipes_limit is not None:
+        if recipes_limit:
             recipes = recipes[:int(recipes_limit)]
 
         return SubscribeRecipeSerializer(recipes, many=True).data

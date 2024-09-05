@@ -10,7 +10,6 @@ from .user_serializers import (
 )
 from .subscribe_serializers import GetUserSubscriptionSerializer
 from users.models import FoodUser
-from subscriptions.models import Subscription
 
 
 class FoodUserViewSet(mixins.CreateModelMixin,
@@ -37,7 +36,7 @@ class FoodUserViewSet(mixins.CreateModelMixin,
             url_path='me',
             permission_classes=(permissions.IsAuthenticated,))
     def get_profile_info(self, request, *args, **kwargs):
-        instance = get_object_or_404(self.get_queryset(), pk=request.user.pk)
+        instance = get_object_or_404(self.get_queryset(), id=request.user.id)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -57,37 +56,12 @@ class FoodUserViewSet(mixins.CreateModelMixin,
             methods=('GET',),
             permission_classes=(permissions.IsAuthenticated,))
     def subscriptions(self, request, *args, **kwargs):
-        user = request.user
-        subscriptions = Subscription.objects.filter(
-            user=user
-        ).select_related('author')
-
-        paginated_subscriptions = self.paginate_queryset(subscriptions)
+        authors = [sub.author for sub in request.user.subscriptions.all()]
+        paginated_authors = self.paginate_queryset(authors)
         serializer = self.get_serializer(
-            paginated_subscriptions, many=True, context={'request': request}
+            paginated_authors, many=True, context={'request': request}
         )
-
         return self.get_paginated_response(serializer.data)
-
-    # @action(detail=True,
-    #         methods=('POST',),
-    #         permission_classes=(permissions.IsAuthenticated,))
-    # def subscribe(self, request, *args, **kwargs):
-    #     author = get_object_or_404(FoodUser, pk=self.kwargs['pk'])
-    #     Subscription.objects.get_or_create(user=request.user, author=author)
-    #     serializer = SubscriptionSerializer(author, context={'request': request})
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # @action(detail=True,
-    #         methods=('DELETE',),
-    #         url_path='subscribe',
-    #         permission_classes=(permissions.IsAuthenticated,))
-    # def unsubscribe(self, request, *args, **kwargs):
-    #     author = get_object_or_404(FoodUser, pk=self.kwargs['pk'])
-    #     Subscription.objects.filter(
-    #         user=request.user, author=author
-    #     ).delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AvatarViewSet(mixins.UpdateModelMixin,
@@ -97,7 +71,7 @@ class AvatarViewSet(mixins.UpdateModelMixin,
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
-        return get_object_or_404(self.queryset, pk=self.request.user.pk)
+        return get_object_or_404(self.queryset, id=self.request.user.id)
 
     def delete_avatar(self, request, *args, **kwargs):
         instance = self.get_object()

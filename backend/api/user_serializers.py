@@ -70,7 +70,7 @@ class GetFoodUserSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request.user.is_authenticated:
             return Subscription.objects.filter(
-                user=request.user, author=obj
+                user=obj, author=request.user
             ).exists()
         return False
 
