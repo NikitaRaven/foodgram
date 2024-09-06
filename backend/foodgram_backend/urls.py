@@ -19,10 +19,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from api.recipe_views import ShortLinkView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('s/<str:random_sequence>/',
+         ShortLinkView.as_view(),
+         name='short-link'),
 ]
 
 if settings.DEBUG:

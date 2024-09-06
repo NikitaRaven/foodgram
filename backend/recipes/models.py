@@ -36,6 +36,7 @@ class Recipe(models.Model):
     name = models.CharField(max_length=256)
     text = models.TextField()
     cooking_time = models.PositiveIntegerField()
+    short_link = models.CharField(max_length=4, default='')
 
     def __str__(self):
         return self.name
