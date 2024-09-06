@@ -5,7 +5,8 @@ from recipes.models import Tag, Ingredient, Recipe
 from .serializers import (
     TagSerializer, IngredientSerializer, RecipeSerializer
 )
-from .filters import IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
+from .permissions import RecipePermission
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -25,7 +26,11 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all().order_by('name')
     serializer_class = RecipeSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly, RecipePermission
+    )
+    filter_backends = (django_filters.DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
