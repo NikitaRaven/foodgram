@@ -127,6 +127,29 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request.user.is_authenticated:
             return ShoppingList.objects.filter(
-                user=request.user, recipe_ingredients__recipe=obj
+                user=request.user, recipe=obj
             ).exists()
         return False
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='recipe.name', read_only=True)
+    image = PictureField(source='recipe.image', read_only=True)
+    cooking_time = serializers.IntegerField(
+        source='recipe.cooking_time',
+        read_only=True
+    )
+
+    class Meta:
+        model = Favorite
+        fields = ('id', 'recipe', 'user', 'name', 'image', 'cooking_time')
+        extra_kwargs = {
+            'recipe': {'write_only': True},
+            'user': {'write_only': True}
+        }
+
+
+class ShoppingListSerializer(FavoriteSerializer):
+
+    class Meta(FavoriteSerializer.Meta):
+        model = ShoppingList

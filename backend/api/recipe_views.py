@@ -1,15 +1,18 @@
 import random
 import string
 
-from rest_framework import viewsets, permissions, status
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, permissions, status, generics, mixins
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters import rest_framework as django_filters
 
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import Tag, Ingredient, Recipe, Favorite
+from shopping.models import ShoppingList
 from .recipe_serializers import (
-    TagSerializer, IngredientSerializer, RecipeSerializer
+    TagSerializer, IngredientSerializer, RecipeSerializer, FavoriteSerializer,
+    ShoppingListSerializer
 )
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import RecipePermission
@@ -71,3 +74,37 @@ class ShortLinkView(APIView):
         else:
             return Response({"detail": "Not found."},
                             status.HTTP_404_NOT_FOUND)
+
+
+class FavoriteView(generics.GenericAPIView):
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteSerializer
+    not_found = 'The recipe is not in favorites.'
+
+    def post(self, request, *args, **kwargs):
+        data = {
+            'recipe': kwargs.get('id'),
+            'user': request.user.id
+        }
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        recipe = get_object_or_404(Recipe.objects.all(), id=kwargs.get('id'))
+        instance = self.get_queryset().filter(
+            recipe=recipe
+        ).first()
+        if instance:
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'errors': self.not_found},
+                        status.HTTP_404_NOT_FOUND)
+
+
+class ShoppingListView(FavoriteView):
+    queryset = ShoppingList.objects.all()
+    serializer_class = ShoppingListSerializer
+    not_found = 'The recipe is not in shopping cart.'

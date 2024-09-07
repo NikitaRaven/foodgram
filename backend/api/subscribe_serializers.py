@@ -26,7 +26,7 @@ class GetUserSubscriptionSerializer(GetFoodUserSerializer):
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count', 'avatar'
-        )
+            )
 
     def get_recipes(self, obj):
         request = self.context.get('request')
