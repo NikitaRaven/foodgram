@@ -1,7 +1,10 @@
 import random
 import string
+from collections import defaultdict
 
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
 from rest_framework import viewsets, permissions, status, generics, mixins
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -60,6 +63,34 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe.save()
         short_link = request.build_absolute_uri(f'/s/{recipe.short_link}')
         return Response({"short-link": short_link}, status=status.HTTP_200_OK)
+
+    @action(detail=False,
+            methods=('GET',),
+            permission_classes=(permissions.IsAuthenticated,))
+    def download_shopping_cart(self, request, *args, **kwargs):
+        user = request.user
+        shopping_lists = ShoppingList.objects.filter(
+            user=user
+        ).prefetch_related(
+            Prefetch('recipe__recipe_ingredients__ingredient')
+        ).values_list(
+            'recipe__recipe_ingredients__ingredient__name',
+            'recipe__recipe_ingredients__amount',
+            'recipe__recipe_ingredients__ingredient__measurement_unit'
+        )
+
+        ingredient_list = defaultdict(lambda: (0, ''))
+        for key, value, unit in shopping_lists:
+            ingredient_list[key] = (ingredient_list[key][0] + value, unit)
+        ingredient_list = dict(sorted(ingredient_list.items()))
+
+        response = HttpResponse(
+            content_type='text/plain', status=status.HTTP_200_OK
+        )
+        response['Content-Disposition'] = 'attachment; filename="ingredients.txt"'
+        for key, (value, unit) in ingredient_list.items():
+            response.write(f'{key}: {value} {unit}\n')
+        return response
 
 
 class ShortLinkView(APIView):
