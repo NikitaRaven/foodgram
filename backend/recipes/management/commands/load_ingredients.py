@@ -11,9 +11,7 @@ class Command(BaseCommand):
     help = 'Load ingredients from ingredients.csv into the database'
 
     def handle(self, *args, **kwargs):
-        data_file_path = os.path.join(
-            settings.BASE_DIR, '..', 'data', 'ingredients.csv'
-        )
+        data_file_path = os.path.join(settings.BASE_DIR, 'ingredients.csv')
 
         with open(
             data_file_path,
