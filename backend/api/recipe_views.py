@@ -5,7 +5,7 @@ from collections import defaultdict
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from rest_framework import viewsets, permissions, status, generics, mixins
+from rest_framework import viewsets, permissions, status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -24,12 +24,14 @@ from .permissions import RecipePermission
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all().order_by('slug')
     serializer_class = TagSerializer
+    permission_classes = (permissions.AllowAny,)
     pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all().order_by('name')
     serializer_class = IngredientSerializer
+    permission_classes = (permissions.AllowAny,)
     pagination_class = None
     filter_backends = (django_filters.DjangoFilterBackend,)
     filterset_class = IngredientFilter
@@ -68,9 +70,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=('GET',),
             permission_classes=(permissions.IsAuthenticated,))
     def download_shopping_cart(self, request, *args, **kwargs):
-        user = request.user
         shopping_lists = ShoppingList.objects.filter(
-            user=user
+            user=request.user
         ).prefetch_related(
             Prefetch('recipe__recipe_ingredients__ingredient')
         ).values_list(

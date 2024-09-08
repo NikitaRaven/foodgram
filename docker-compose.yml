@@ -1,0 +1,24 @@
+version: '3'
+
+volumes:
+  static:
+  media:
+
+services:
+  backend:
+    image: nikitaraven/foodgram_backend:latest
+    volumes:
+      - static:/backend_static/
+      - media:/app/media/
+  frontend:
+    image: nikitaraven/foodgram_frontend:latest
+    command: cp -r /app/build/. /frontend_static/
+    volumes:
+      - static:/frontend_static/
+  gateway:
+    image: nikitaraven/foodgram_gateway:latest
+    ports:
+      - 80:80
+    volumes:
+      - static:/staticfiles/
+      - media:/media/
