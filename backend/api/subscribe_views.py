@@ -5,6 +5,7 @@ from subscriptions.models import Subscription
 from .subscribe_serializers import (
     SubscriptionSerializer, GetUserSubscriptionSerializer
 )
+from .constants import SUB_NOT_FOUND
 
 
 class SubscriptionViewSet(viewsets.GenericViewSet):
@@ -34,5 +35,5 @@ class SubscriptionViewSet(viewsets.GenericViewSet):
         if instance:
             instance.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({'errors': 'The subscription does not exist.'},
+        return Response({'errors': SUB_NOT_FOUND},
                         status.HTTP_400_BAD_REQUEST)

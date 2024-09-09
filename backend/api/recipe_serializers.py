@@ -4,7 +4,8 @@ from rest_framework import serializers
 from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient, Favorite
 from shopping.models import ShoppingList
 from .picture_field import PictureField
-from .user_serializers import GetFoodUserSerializer
+from .user_serializers import UserInfoSerializer
+from .constants import NOT_DICT_INGREDIENT, NO_KEYS, BELOW_ZERO, DUPLICATE_ID
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -47,7 +48,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         allow_empty=False
     )
     image = PictureField(required=True)
-    author = GetFoodUserSerializer(read_only=True)
+    author = UserInfoSerializer(read_only=True)
     is_favorited = serializers.SerializerMethodField(
         'get_is_favorited',
         read_only=True
@@ -68,15 +69,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         seen_ids = set()
         for ingredient in ingredients:
             if not isinstance(ingredient, dict):
-                raise serializers.ValidationError("Each ingredient must be a dictionary.")
+                raise serializers.ValidationError(NOT_DICT_INGREDIENT)
             if 'id' not in ingredient or 'amount' not in ingredient:
-                raise serializers.ValidationError("Each ingredient must contain 'id' and 'amount'.")
+                raise serializers.ValidationError(NO_KEYS)
             if ingredient['amount'] <= 0:
-                raise serializers.ValidationError("Amount must be greater than zero.")
+                raise serializers.ValidationError(BELOW_ZERO)
 
             ingredient_id = ingredient['id']
             if ingredient_id in seen_ids:
-                raise serializers.ValidationError(f"Duplicate ingredient id found: {ingredient_id}.")
+                raise serializers.ValidationError(DUPLICATE_ID, ingredient_id)
             seen_ids.add(ingredient_id)
 
         return ingredients

@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from recipes.models import Recipe
 from subscriptions.models import Subscription
-from .user_serializers import GetFoodUserSerializer
+from .user_serializers import UserInfoSerializer
+from .constants import SUB_YOURSELF
 
 
 class SubscribeRecipeSerializer(serializers.ModelSerializer):
@@ -12,7 +13,7 @@ class SubscribeRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class GetUserSubscriptionSerializer(GetFoodUserSerializer):
+class GetUserSubscriptionSerializer(UserInfoSerializer):
     recipes = serializers.SerializerMethodField(
         'get_recipes',
         read_only=True
@@ -22,11 +23,11 @@ class GetUserSubscriptionSerializer(GetFoodUserSerializer):
         read_only=True
     )
 
-    class Meta(GetFoodUserSerializer.Meta):
+    class Meta(UserInfoSerializer.Meta):
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count', 'avatar'
-            )
+        )
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -50,5 +51,5 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs['user'] == attrs['author']:
-            raise serializers.ValidationError("You can't subscribe to yourself.")
+            raise serializers.ValidationError(SUB_YOURSELF)
         return super().validate(attrs)

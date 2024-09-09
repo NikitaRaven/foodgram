@@ -19,6 +19,9 @@ from .recipe_serializers import (
 )
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import RecipePermission
+from .constants import (
+    SHOPPING_CONTENT, NOT_FOUND_RECIPE, NOT_FOUND_FAVORITE, NOT_FOUND_SHOPPING
+)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -88,7 +91,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response = HttpResponse(
             content_type='text/plain', status=status.HTTP_200_OK
         )
-        response['Content-Disposition'] = 'attachment; filename="ingredients.txt"'
+        response['Content-Disposition'] = SHOPPING_CONTENT
         for key, (value, unit) in ingredient_list.items():
             response.write(f'{key}: {value} {unit}\n')
         return response
@@ -104,14 +107,14 @@ class ShortLinkView(APIView):
                                           context={'request': request})
             return Response(serializer.data, status.HTTP_200_OK)
         else:
-            return Response({"detail": "Not found."},
+            return Response({"detail": NOT_FOUND_RECIPE},
                             status.HTTP_404_NOT_FOUND)
 
 
 class FavoriteView(generics.GenericAPIView):
     queryset = Favorite.objects.all()
     serializer_class = FavoriteSerializer
-    not_found = 'The recipe is not in favorites.'
+    not_found = NOT_FOUND_FAVORITE
 
     def post(self, request, *args, **kwargs):
         data = {
@@ -139,4 +142,4 @@ class FavoriteView(generics.GenericAPIView):
 class ShoppingListView(FavoriteView):
     queryset = ShoppingList.objects.all()
     serializer_class = ShoppingListSerializer
-    not_found = 'The recipe is not in shopping cart.'
+    not_found = NOT_FOUND_SHOPPING

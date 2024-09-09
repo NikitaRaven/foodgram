@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from .user_serializers import (
-    PostFoodUserSerializer, GetFoodUserSerializer,
+    UserCreateSerializer, UserInfoSerializer,
     AvatarSerializer, PasswordSerializer
 )
 from .subscribe_serializers import GetUserSubscriptionSerializer
@@ -24,12 +24,12 @@ class FoodUserViewSet(mixins.CreateModelMixin,
         if method == 'GET':
             if self.action == 'subscriptions':
                 return GetUserSubscriptionSerializer
-            return GetFoodUserSerializer
+            return UserInfoSerializer
 
         if method == 'POST':
             if self.action == 'set_password':
                 return PasswordSerializer
-            return PostFoodUserSerializer
+            return UserCreateSerializer
 
     @action(detail=False,
             methods=('GET',),
