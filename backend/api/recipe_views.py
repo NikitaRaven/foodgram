@@ -22,6 +22,7 @@ from .permissions import RecipePermission
 from .constants import (
     SHOPPING_CONTENT, NOT_FOUND_RECIPE, NOT_FOUND_FAVORITE, NOT_FOUND_SHOPPING
 )
+from recipes.constants import RECIPE_LINK_LENGTH
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -41,7 +42,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all().order_by('name')
+    queryset = Recipe.objects.all().order_by('-created_at')
     serializer_class = RecipeSerializer
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly, RecipePermission
@@ -55,7 +56,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=('GET',), url_path='get-link')
     def get_link(self, request, *args, **kwargs):
         recipe = self.get_object()
-        random_sequence = ''.join(random.choices(string.ascii_lowercase, k=4))
+        random_sequence = ''.join(
+            random.choices(string.ascii_lowercase, k=RECIPE_LINK_LENGTH)
+        )
         existing_recipe = Recipe.objects.filter(
             short_link=random_sequence
         ).first()

@@ -21,6 +21,7 @@ VERBOSE_NAME_RECIPE: str = 'название'
 VERBOSE_TEXT_RECIPE: str = 'описание'
 VERBOSE_TIME_RECIPE: str = 'время приготовления'
 VERBOSE_LINK_RECIPE: str = 'короткая ссылка'
+VERBOSE_DATE_RECIPE: str = 'дата создания рецепта'
 RECIPE_VERBOSE: str = 'рецепт'
 RECIPE_VERBOSE_PLURAL: str = 'рецепты'
 
