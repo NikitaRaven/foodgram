@@ -27,7 +27,7 @@ services:
     image: nikitaraven/foodgram_gateway:latest
     env_file: .env
     ports:
-      - 80:80
+      - 8080:80
     volumes:
       - static:/staticfiles/
       - media:/media/
