@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '89.169.167.1', 'nvfoodgram.duckdns.org']
 
-CSRF_TRUSTED_ORIGINS = ['https://nvfoodgram.duckdns.org',]
+CSRF_TRUSTED_ORIGINS = ['https://nvfoodgram.duckdns.org', ]
 
 
 # Application definition
