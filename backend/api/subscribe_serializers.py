@@ -24,10 +24,7 @@ class GetUserSubscriptionSerializer(UserInfoSerializer):
     )
 
     class Meta(UserInfoSerializer.Meta):
-        fields = (
-            'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'recipes', 'recipes_count', 'avatar'
-        )
+        fields = UserInfoSerializer.Meta.fields + ('recipes', 'recipes_count')
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -47,7 +44,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ('id', 'user', 'author')
+        fields = '__all__'
 
     def validate(self, attrs):
         if attrs['user'] == attrs['author']:

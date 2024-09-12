@@ -20,7 +20,7 @@ from .recipe_serializers import (
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import RecipePermission
 from .constants import (
-    SHOPPING_CONTENT, NOT_FOUND_RECIPE, NOT_FOUND_FAVORITE, NOT_FOUND_SHOPPING
+    SHOPPING_CONTENT, NOT_FOUND_FAVORITE, NOT_FOUND_SHOPPING
 )
 from recipes.constants import RECIPE_LINK_LENGTH
 
@@ -104,14 +104,10 @@ class ShortLinkView(APIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get(self, request, random_sequence):
-        recipe = Recipe.objects.filter(short_link=random_sequence).first()
-        if recipe:
-            serializer = RecipeSerializer(recipe,
-                                          context={'request': request})
-            return Response(serializer.data, status.HTTP_200_OK)
-        else:
-            return Response({"detail": NOT_FOUND_RECIPE},
-                            status.HTTP_404_NOT_FOUND)
+        recipe = get_object_or_404(Recipe, short_link=random_sequence)
+        serializer = RecipeSerializer(recipe,
+                                      context={'request': request})
+        return Response(serializer.data, status.HTTP_200_OK)
 
 
 class FavoriteView(generics.GenericAPIView):

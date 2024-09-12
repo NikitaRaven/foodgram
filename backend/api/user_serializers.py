@@ -9,10 +9,12 @@ from .picture_field import PictureField
 from .constants import (
     INVALID_USERNAME, DUPLICATE_USERNAME, INVALID_PASSWORD, SAME_PASSWORD
 )
+from users.constants import USERNAME_LENGTH, PASSWORD_LENGTH
 
 
 class UserCreateSerializer(serializers.ModelSerializer, FirstPasswordMixin):
     username = serializers.CharField(
+        max_length=USERNAME_LENGTH,
         validators=(
             RegexValidator(
                 regex=r'^[\w.@+-]+$',
@@ -72,16 +74,18 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if request.user.is_authenticated:
-            return Subscription.objects.filter(
-                user=obj, author=request.user
-            ).exists()
-        return False
+        return Subscription.objects.filter(
+            user=obj, author=request.user
+        ).exists() if request.user.is_authenticated else False
 
 
 class PasswordSerializer(serializers.Serializer, NewPasswordMixin):
-    new_password = serializers.CharField(required=True)
-    current_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(
+        required=True, max_length=PASSWORD_LENGTH
+    )
+    current_password = serializers.CharField(
+        required=True, max_length=PASSWORD_LENGTH
+    )
 
     class Meta:
         fields = ('current_password', 'new_password')

@@ -5,21 +5,24 @@ from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient, Favorite
 from shopping.models import ShoppingList
 from .picture_field import PictureField
 from .user_serializers import UserInfoSerializer
-from .constants import NOT_DICT_INGREDIENT, NO_KEYS, BELOW_ZERO, DUPLICATE_ID
+from .constants import (
+    NOT_DICT_INGREDIENT, NO_KEYS, BELOW_ZERO, ABOVE_MAX, DUPLICATE_ID,
+    MAX_AMOUNT
+)
 
 
 class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'slug')
+        fields = '__all__'
 
 
 class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'measurement_unit')
+        fields = '__all__'
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -30,7 +33,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        fields = ('id', 'name', 'measurement_unit', 'ingredient', 'amount')
+        exclude = ('recipe',)
         extra_kwargs = {'ingredient': {'write_only': True}}
 
 
@@ -60,10 +63,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = (
-            'id', 'tags', 'author', 'ingredients', 'is_favorited',
-            'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
-        )
+        exclude = ('short_link', 'created_at')
 
     def validate_ingredients(self, ingredients):
         seen_ids = set()
@@ -74,6 +74,8 @@ class RecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(NO_KEYS)
             if ingredient['amount'] <= 0:
                 raise serializers.ValidationError(BELOW_ZERO)
+            if ingredient['amount'] > MAX_AMOUNT:
+                raise serializers.ValidationError(ABOVE_MAX)
 
             ingredient_id = ingredient['id']
             if ingredient_id in seen_ids:
@@ -88,19 +90,18 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         recipe = Recipe.objects.create(**validated_data)
 
-        ingredients = Ingredient.objects.all()
-        for ingredient_data in ingredients_data:
+        ingredients = [None] * len(ingredients_data)
+        for i, ingredient_data in enumerate(ingredients_data):
             ingredient_id = ingredient_data.get('id')
             amount = ingredient_data.get('amount')
-            ingredient = get_object_or_404(ingredients, id=ingredient_id)
-            RecipeIngredient.objects.create(
+            ingredient = get_object_or_404(Ingredient, id=ingredient_id)
+            ingredients[i] = RecipeIngredient(
                 recipe=recipe, ingredient=ingredient, amount=amount
             )
+        RecipeIngredient.objects.bulk_create(ingredients)
 
-        tags = Tag.objects.all()
-        for tag_id in tags_data:
-            tag = get_object_or_404(tags, id=tag_id)
-            recipe.tags.add(tag)
+        tags = Tag.objects.filter(id__in=tags_data)
+        recipe.tags.set(tags)
 
         return recipe
 
@@ -118,19 +119,15 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        if request.user.is_authenticated:
-            return Favorite.objects.filter(
-                user=request.user, recipe=obj
-            ).exists()
-        return False
+        return Favorite.objects.filter(
+            user=request.user, recipe=obj
+        ).exists() if request.user.is_authenticated else False
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
-        if request.user.is_authenticated:
-            return ShoppingList.objects.filter(
-                user=request.user, recipe=obj
-            ).exists()
-        return False
+        return ShoppingList.objects.filter(
+            user=request.user, recipe=obj
+        ).exists() if request.user.is_authenticated else False
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -143,7 +140,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Favorite
-        fields = ('id', 'recipe', 'user', 'name', 'image', 'cooking_time')
+        fields = '__all__'
         extra_kwargs = {
             'recipe': {'write_only': True},
             'user': {'write_only': True}
