@@ -13,11 +13,9 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         data_file_path = os.path.join(settings.BASE_DIR, 'ingredients.csv')
         ingredients_to_create = []
-        existing_ingredients = set()
-        for ingredient in Ingredient.objects.all():
-            existing_ingredients.add(
-                (ingredient.name, ingredient.measurement_unit)
-            )
+        existing_ingredients = set(
+            Ingredient.objects.values_list('name', 'measurement_unit')
+        )
 
         with open(
             data_file_path,

@@ -4,6 +4,7 @@ from rest_framework.validators import UniqueValidator
 
 from users.models import FoodUser
 from subscriptions.models import Subscription
+from users.validators import validate_username
 from .password_mixin import FirstPasswordMixin, NewPasswordMixin
 from .picture_field import PictureField
 from .constants import (
@@ -16,10 +17,7 @@ class UserCreateSerializer(serializers.ModelSerializer, FirstPasswordMixin):
     username = serializers.CharField(
         max_length=USERNAME_LENGTH,
         validators=(
-            RegexValidator(
-                regex=r'^[\w.@+-]+$',
-                message=INVALID_USERNAME
-            ),
+            validate_username,
             UniqueValidator(
                 queryset=FoodUser.objects.all(),
                 message=DUPLICATE_USERNAME

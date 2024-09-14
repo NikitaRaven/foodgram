@@ -11,3 +11,7 @@ VERBOSE_AVATAR: str = 'аватар'
 
 FOODUSER_VERBOSE: str = 'пользователь'
 FOODUSER_VERBOSE_PLURAL: str = 'пользователи'
+
+INVALID_USERNAME: str = (
+    'В имени пользователя допускаются буквы алфафвита, цифры и @, ., +.'
+)

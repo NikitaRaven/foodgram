@@ -5,10 +5,7 @@ from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient, Favorite
 from shopping.models import ShoppingList
 from .picture_field import PictureField
 from .user_serializers import UserInfoSerializer
-from .constants import (
-    NOT_DICT_INGREDIENT, NO_KEYS, BELOW_ZERO, ABOVE_MAX, DUPLICATE_ID,
-    MAX_AMOUNT
-)
+from .constants import NOT_DICT_INGREDIENT, NO_KEYS, DUPLICATE_ID
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -33,8 +30,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        exclude = ('recipe',)
-        extra_kwargs = {'ingredient': {'write_only': True}}
+        exclude = ('recipe', 'ingredient')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -72,10 +68,6 @@ class RecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(NOT_DICT_INGREDIENT)
             if 'id' not in ingredient or 'amount' not in ingredient:
                 raise serializers.ValidationError(NO_KEYS)
-            if ingredient['amount'] <= 0:
-                raise serializers.ValidationError(BELOW_ZERO)
-            if ingredient['amount'] > MAX_AMOUNT:
-                raise serializers.ValidationError(ABOVE_MAX)
 
             ingredient_id = ingredient['id']
             if ingredient_id in seen_ids:
@@ -95,6 +87,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             ingredient_id = ingredient_data.get('id')
             amount = ingredient_data.get('amount')
             ingredient = get_object_or_404(Ingredient, id=ingredient_id)
+            serializer = RecipeIngredientSerializer(data={'amount': amount})
+            serializer.is_valid(raise_exception=True)
             ingredients[i] = RecipeIngredient(
                 recipe=recipe, ingredient=ingredient, amount=amount
             )

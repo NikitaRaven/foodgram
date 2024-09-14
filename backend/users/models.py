@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from .validators import validate_username
 from .constants import (
     VERBOSE_MAIL, VERBOSE_USERNAME, VERBOSE_FIRST, VERBOSE_LAST,
     VERBOSE_PASSWORD, VERBOSE_AVATAR, FOODUSER_VERBOSE,
@@ -16,7 +17,8 @@ class FoodUser(AbstractUser):
     username = models.CharField(
         max_length=USERNAME_LENGTH,
         unique=True,
-        verbose_name=VERBOSE_USERNAME)
+        verbose_name=VERBOSE_USERNAME,
+        validators=(validate_username,))
     first_name = models.CharField(
         max_length=USERNAME_LENGTH,
         verbose_name=VERBOSE_FIRST)

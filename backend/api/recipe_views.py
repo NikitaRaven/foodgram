@@ -3,7 +3,7 @@ import string
 from collections import defaultdict
 
 from django.db.models import Prefetch
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.views import APIView
@@ -105,9 +105,7 @@ class ShortLinkView(APIView):
 
     def get(self, request, random_sequence):
         recipe = get_object_or_404(Recipe, short_link=random_sequence)
-        serializer = RecipeSerializer(recipe,
-                                      context={'request': request})
-        return Response(serializer.data, status.HTTP_200_OK)
+        return redirect(f'/recipes/{recipe.id}/')
 
 
 class FavoriteView(generics.GenericAPIView):

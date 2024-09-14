@@ -13,10 +13,10 @@ class FoodUserAdmin(UserAdmin):
     ordering = ('email',)
 
     fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('avatar',)}),
+        (None, {'fields': ('avatar', )}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        (None, {'fields': ('avatar',)}),
+        (None, {'fields': ('email', 'avatar')}),
     )
 
 

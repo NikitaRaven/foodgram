@@ -1,9 +1,6 @@
 NOT_DICT_INGREDIENT: str = 'Каждый ингредиент должен быть словарем.'
 NO_KEYS: str = 'Каждый ингредиент должен содержать ключи id и amount.'
-BELOW_ZERO: str = 'Количество должно быть больше 0.'
-ABOVE_MAX: str = 'Введена слишком большая величина.'
 DUPLICATE_ID: str = 'У некоторых ингредиентов обнаружен одинаковый id:'
-MAX_AMOUNT: int = 2147483647
 
 SHOPPING_CONTENT: str = 'attachment; filename="ingredients.txt"'
 NOT_FOUND_FAVORITE: str = 'Рецепт не является избанным.'

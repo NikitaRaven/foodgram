@@ -1,6 +1,8 @@
+from django import forms
 from django.contrib import admin
 
-from .models import Tag, Ingredient, Favorite, Recipe
+from .models import Tag, Ingredient, Favorite, Recipe, RecipeIngredient
+from .constants import ADMIN_NO_INGREDIENTS
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -24,10 +26,40 @@ class FavoriteAdmin(admin.ModelAdmin):
         return queryset
 
 
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+
+
+class RecipeAdminForm(forms.ModelForm):
+    class Meta:
+        model = Recipe
+        exclude = ('short_link',)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        total_forms = int(self.data.get('recipe_ingredients-TOTAL_FORMS', 0))
+
+        has_ingredient = False
+        for i in range(total_forms):
+            ingredient = self.data.get(f'recipe_ingredients-{i}-ingredient')
+            amount = self.data.get(f'recipe_ingredients-{i}-amount')
+            if ingredient and amount:
+                has_ingredient = True
+                break
+
+        if not has_ingredient:
+            raise forms.ValidationError(ADMIN_NO_INGREDIENTS)
+
+        return cleaned_data
+
+
 class RecipeAdmin(admin.ModelAdmin):
+    form = RecipeAdminForm
     list_display = ('name', 'author_username', 'get_favorite_count')
     search_fields = ('author__username', 'name')
     list_filter = ('tags',)
+    inlines = (RecipeIngredientInline,)
 
     def author_username(self, obj):
         return obj.author.username
