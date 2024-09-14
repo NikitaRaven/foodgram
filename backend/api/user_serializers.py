@@ -1,4 +1,3 @@
-from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -8,7 +7,7 @@ from users.validators import validate_username
 from .password_mixin import FirstPasswordMixin, NewPasswordMixin
 from .picture_field import PictureField
 from .constants import (
-    INVALID_USERNAME, DUPLICATE_USERNAME, INVALID_PASSWORD, SAME_PASSWORD
+    DUPLICATE_USERNAME, INVALID_PASSWORD, SAME_PASSWORD
 )
 from users.constants import USERNAME_LENGTH, PASSWORD_LENGTH
 

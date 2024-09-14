@@ -6,13 +6,8 @@ SHOPPING_CONTENT: str = 'attachment; filename="ingredients.txt"'
 NOT_FOUND_FAVORITE: str = 'Рецепт не является избанным.'
 NOT_FOUND_SHOPPING: str = 'Рецепт не найден в корзине для покупок.'
 
-SUB_YOURSELF: str = 'Нельзя подписаться на самого себя.'
-
 SUB_NOT_FOUND: str = 'Подписка не найдена.'
 
-INVALID_USERNAME: str = (
-    'В имени пользователя допускаются буквы алфафвита, цифры и @, ., +.'
-)
 DUPLICATE_USERNAME: str = 'Пользователь с таким именем уже есть.'
 COMMON_PASSWORDS: set[str] = {
     '123456', 'password', '123456789', '12345678', '12345', '1234567',

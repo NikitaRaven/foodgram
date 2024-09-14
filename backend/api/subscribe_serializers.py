@@ -3,7 +3,7 @@ from rest_framework import serializers
 from recipes.models import Recipe
 from subscriptions.models import Subscription
 from .user_serializers import UserInfoSerializer
-from .constants import SUB_YOURSELF
+from subscriptions.constants import SUB_YOURSELF
 
 
 class SubscribeRecipeSerializer(serializers.ModelSerializer):
